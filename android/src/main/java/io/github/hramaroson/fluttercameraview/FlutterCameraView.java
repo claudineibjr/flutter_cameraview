@@ -25,27 +25,28 @@ import java.io.File;
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 
-public class FlutterCameraView implements PlatformView, MethodCallHandler, 
-        Application.ActivityLifecycleCallbacks {
+public class FlutterCameraView implements PlatformView, MethodCallHandler, Application.ActivityLifecycleCallbacks {
     private final CameraView mCameraView;
     private final MethodChannel mMethodChanel;
     private final Context mContext;
 
     private String mCapturedPictureFilePath;
 
-    FlutterCameraView(Context context, BinaryMessenger messenger, int id, Activity activity){
+    FlutterCameraView(Context context, BinaryMessenger messenger, int id, Activity activity) {
         mContext = context;
         mCameraView = new CameraView(context);
         mMethodChanel = new MethodChannel(messenger, "plugins.hramaroson.github.io/cameraview_" + id);
         mMethodChanel.setMethodCallHandler(this);
 
         activity.getApplication().registerActivityLifecycleCallbacks(this);
-        
+
         mCameraView.open();
         mCameraView.setMode(Mode.PICTURE);
         mCameraView.addCameraListener(new CameraListener() {
             @Override
-            public void onPictureTaken(PictureResult result) { onPicture(result);}
+            public void onPictureTaken(PictureResult result) {
+                onPicture(result);
+            }
         });
     }
 
@@ -60,13 +61,16 @@ public class FlutterCameraView implements PlatformView, MethodCallHandler,
             case "isOpened":
                 isOpened(methodCall, result);
                 break;
+            case "open":
+                open(methodCall, result);
+                break;
             case "getFacing":
                 getFacing(methodCall, result);
                 break;
             case "setFacing":
                 setFacing(methodCall, result);
                 break;
-            case "setFlash": 
+            case "setFlash":
                 setFlash(methodCall, result);
                 break;
             case "getFlash":
@@ -81,7 +85,8 @@ public class FlutterCameraView implements PlatformView, MethodCallHandler,
     }
 
     @Override
-    public void onActivityCreated(Activity activity, Bundle savedInstanceState) {}
+    public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
+    }
 
     @Override
     public void onActivityStarted(Activity activity) {
@@ -89,7 +94,7 @@ public class FlutterCameraView implements PlatformView, MethodCallHandler,
     }
 
     @Override
-    public void onActivityResumed (Activity activity) { 
+    public void onActivityResumed(Activity activity) {
         mCameraView.open();
     }
 
@@ -104,7 +109,8 @@ public class FlutterCameraView implements PlatformView, MethodCallHandler,
     }
 
     @Override
-    public void onActivitySaveInstanceState(Activity activity, Bundle outState) {}
+    public void onActivitySaveInstanceState(Activity activity, Bundle outState) {
+    }
 
     @Override
     public void onActivityDestroyed(Activity activity) {
@@ -112,24 +118,24 @@ public class FlutterCameraView implements PlatformView, MethodCallHandler,
     }
 
     @Override
-    public void dispose(){
+    public void dispose() {
         mCameraView.destroy();
     }
 
-    private static Facing __facingValueFromIndex(int index){
-        switch (index){
+    private static Facing __facingValueFromIndex(int index) {
+        switch (index) {
             case 0:
-              return Facing.BACK;
+                return Facing.BACK;
             case 1:
-              return Facing.FRONT;
+                return Facing.FRONT;
             default:
-              break;
+                break;
         }
         return Facing.BACK;
     }
 
-    private static int __facingIndexFromValue (Facing facing){
-        switch (facing){
+    private static int __facingIndexFromValue(Facing facing) {
+        switch (facing) {
             case BACK:
                 return 0;
             case FRONT:
@@ -140,24 +146,24 @@ public class FlutterCameraView implements PlatformView, MethodCallHandler,
         return 0;
     }
 
-    private static Flash __flashValueFromIndex(int index){
-        switch (index){
+    private static Flash __flashValueFromIndex(int index) {
+        switch (index) {
             case 0:
-              return Flash.OFF;
+                return Flash.OFF;
             case 1:
-              return Flash.ON;
+                return Flash.ON;
             case 2:
-              return Flash.AUTO;
+                return Flash.AUTO;
             case 3:
-              return Flash.TORCH;
+                return Flash.TORCH;
             default:
-              break;
+                break;
         }
         return Flash.OFF;
     }
 
-    private static int __flashIndexFromValue(Flash flash){
-        switch (flash){
+    private static int __flashIndexFromValue(Flash flash) {
+        switch (flash) {
             case OFF:
                 return 0;
             case ON:
@@ -176,23 +182,28 @@ public class FlutterCameraView implements PlatformView, MethodCallHandler,
         result.success(mCameraView.isOpened());
     }
 
-    private void setFacing(MethodCall methodCall, MethodChannel.Result result){
-        mCameraView.setFacing(__facingValueFromIndex((int) methodCall.arguments));
-        result.success (null);
+    private void open(MethodCall methodCall, MethodChannel.Result result) {
+        mCameraView.open();
+        result.success(null);
     }
 
-    private void getFacing(MethodCall methodCall, MethodChannel.Result result){
+    private void setFacing(MethodCall methodCall, MethodChannel.Result result) {
+        mCameraView.setFacing(__facingValueFromIndex((int) methodCall.arguments));
+        result.success(null);
+    }
+
+    private void getFacing(MethodCall methodCall, MethodChannel.Result result) {
         result.success(__facingIndexFromValue(mCameraView.getFacing()));
     }
 
-    private void setFlash(MethodCall methodCall, MethodChannel.Result result){
-        if (!mCameraView.isTakingPicture() && !mCameraView.isTakingVideo()){
+    private void setFlash(MethodCall methodCall, MethodChannel.Result result) {
+        if (!mCameraView.isTakingPicture() && !mCameraView.isTakingVideo()) {
             mCameraView.setFlash(__flashValueFromIndex((int) methodCall.arguments));
         }
-        result.success (null);
+        result.success(null);
     }
-    
-    private void getFlash(MethodCall methodCall, MethodChannel.Result result){
+
+    private void getFlash(MethodCall methodCall, MethodChannel.Result result) {
         result.success(__flashIndexFromValue(mCameraView.getFlash()));
     }
 
@@ -200,16 +211,16 @@ public class FlutterCameraView implements PlatformView, MethodCallHandler,
         mCapturedPictureFilePath = (String) methodCall.arguments;
 
         mCameraView.takePicture();
-        result.success (mCapturedPictureFilePath);
+        result.success(mCapturedPictureFilePath);
     }
 
-    private void onPicture(PictureResult result){
+    private void onPicture(PictureResult result) {
         result.toFile(new File(mCapturedPictureFilePath), new FileCallback() {
             @UiThread
-            public void onFileReady(@Nullable File file){
-                if(file != null){
+            public void onFileReady(@Nullable File file) {
+                if (file != null) {
                     mMethodChanel.invokeMethod("pictureFileCreated", mCapturedPictureFilePath);
-                    mCapturedPictureFilePath = ""; 
+                    mCapturedPictureFilePath = "";
                 }
             }
         });

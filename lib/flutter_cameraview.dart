@@ -10,11 +10,11 @@ import 'package:path_provider/path_provider.dart';
 import 'package:sprintf/sprintf.dart';
 
 typedef void CameraViewCreatedCallback(CameraViewController controller);
-typedef void CameraViewPictureFileCreated (String filePath);
+typedef void CameraViewPictureFileCreated(String filePath);
 
 enum Facing {
   Back,
-  Front
+  Front,
 }
 
 // Flash value indicates the flash mode to be used.
@@ -44,7 +44,7 @@ class CameraView extends StatefulWidget {
   State<StatefulWidget> createState() => _CameraViewState();
 }
 
-class _CameraViewState extends State<CameraView>{
+class _CameraViewState extends State<CameraView> {
   @override
   Widget build(BuildContext context) {
     if (defaultTargetPlatform == TargetPlatform.android) {
@@ -76,10 +76,11 @@ class CameraException implements Exception {
 
 class CameraViewController {
   CameraViewController._(int id)
-      :_channel = new MethodChannel('plugins.hramaroson.github.io/cameraview_$id'),
-      onPictureFileCreated = null {
-          _channel.setMethodCallHandler (_onMethodCall);
-      }
+      : _channel =
+            new MethodChannel('plugins.hramaroson.github.io/cameraview_$id'),
+        onPictureFileCreated = null {
+    _channel.setMethodCallHandler(_onMethodCall);
+  }
 
   final MethodChannel _channel;
 
@@ -87,79 +88,97 @@ class CameraViewController {
 
   Future<bool> isOpened() async {
     try {
-       return _channel.invokeMethod('isOpened');
-    } on PlatformException catch (e){
+      return _channel.invokeMethod('isOpened');
+    } on PlatformException catch (e) {
       throw CameraException(e.code, e.message);
-    } 
+    }
+  }
+
+  Future<void> open() async {
+    try {
+      return _channel.invokeMethod('open');
+    } on PlatformException catch (e) {
+      throw CameraException(e.code, e.message);
+    }
   }
 
   Future<void> setFacing(Facing facing) async {
     try {
-       return _channel.invokeMethod('setFacing', facing.index);
-    } on PlatformException catch (e){
+      return _channel.invokeMethod('setFacing', facing.index);
+    } on PlatformException catch (e) {
       throw CameraException(e.code, e.message);
-    } 
+    }
   }
 
   Future<Facing> getFacing() async {
     try {
       int _facingIndex = await _channel.invokeMethod('getFacing');
       return Facing.values[_facingIndex];
-    } on PlatformException catch (e){
+    } on PlatformException catch (e) {
       throw CameraException(e.code, e.message);
-    } 
+    }
   }
 
   Future<void> setFlash(Flash flash) async {
     try {
       return _channel.invokeMethod('setFlash', flash.index);
-    } on PlatformException catch (e){
+    } on PlatformException catch (e) {
       throw CameraException(e.code, e.message);
-    } 
+    }
   }
 
   Future<Flash> getFlash() async {
     try {
       int _flashIndex = await _channel.invokeMethod('getFlash');
       return Flash.values[_flashIndex];
-    } on PlatformException catch (e){
+    } on PlatformException catch (e) {
       throw CameraException(e.code, e.message);
-    } 
+    }
   }
 
   Future<String> takePicture([String filePath = '']) async {
     String _filePath = filePath;
-    if(_filePath.isEmpty) { //no filePath provided, use the default one.
-      if(!Platform.isIOS) {
-          Directory directory = await getExternalStorageDirectory();
-          _filePath = directory.path;
-          if(Platform.isAndroid) {
-              _filePath = p.join(_filePath, "DCIM","Camera");
-              Directory(_filePath).create(recursive: true);
-              DateTime now = DateTime.now();
-              _filePath = p.join(_filePath, sprintf("IMG_%d%02d%02d_%02d%02d%02d.jpg", 
-                [now.year, now.month, now.day, now.hour, now.minute, now.second]));
-          }
+    if (_filePath.isEmpty) {
+      //no filePath provided, use the default one.
+      if (!Platform.isIOS) {
+        Directory directory = await getExternalStorageDirectory();
+        _filePath = directory.path;
+        if (Platform.isAndroid) {
+          _filePath = p.join(_filePath, "DCIM", "Camera");
+          Directory(_filePath).create(recursive: true);
+          DateTime now = DateTime.now();
+          _filePath = p.join(
+              _filePath,
+              sprintf("IMG_%d%02d%02d_%02d%02d%02d.jpg", [
+                now.year,
+                now.month,
+                now.day,
+                now.hour,
+                now.minute,
+                now.second
+              ]));
+        }
       }
     }
     try {
-       await _channel.invokeMethod('takePicture', _filePath);
+      await _channel.invokeMethod('takePicture', _filePath);
     } on PlatformException catch (e) {
-        _filePath = null;
-        throw CameraException(e.code, e.message);
+      _filePath = null;
+      throw CameraException(e.code, e.message);
     }
     return _filePath;
   }
-  Future<dynamic> _onMethodCall (MethodCall methodCall) async{
-     switch (methodCall.method) {
-       case "pictureFileCreated":
-          if(this.onPictureFileCreated != null){
-            this.onPictureFileCreated (methodCall.arguments);
-          }
-         break;
-       default:
-         break;
-     }
-     return new Future.value(null);
+
+  Future<dynamic> _onMethodCall(MethodCall methodCall) async {
+    switch (methodCall.method) {
+      case "pictureFileCreated":
+        if (this.onPictureFileCreated != null) {
+          this.onPictureFileCreated(methodCall.arguments);
+        }
+        break;
+      default:
+        break;
+    }
+    return new Future.value(null);
   }
 }
