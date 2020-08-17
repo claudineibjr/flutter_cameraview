@@ -4,13 +4,14 @@ import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 import android.os.Bundle;
+import android.util.AttributeSet;
 import android.view.View;
 
+import com.otaliastudios.cameraview.Audio;
 import com.otaliastudios.cameraview.CameraView;
 import com.otaliastudios.cameraview.CameraListener;
 import com.otaliastudios.cameraview.PictureResult;
 import com.otaliastudios.cameraview.FileCallback;
-import com.otaliastudios.cameraview.Audio;
 import com.otaliastudios.cameraview.Flash;
 import com.otaliastudios.cameraview.Facing;
 import com.otaliastudios.cameraview.Mode;
@@ -35,6 +36,7 @@ public class FlutterCameraView implements PlatformView, MethodCallHandler, Appli
     FlutterCameraView(Context context, BinaryMessenger messenger, int id, Activity activity) {
         mContext = context;
         mCameraView = new CameraView(context);
+        mCameraView.setAudio(Audio.OFF);
         mMethodChanel = new MethodChannel(messenger, "plugins.hramaroson.github.io/cameraview_" + id);
         mMethodChanel.setMethodCallHandler(this);
 
