@@ -1,11 +1,11 @@
-#import "FlutterCamerakitPlugin.h"
+#import "FlutterCameraViewPlugin.h"
 
-@implementation FlutterCamerakitPlugin
+@implementation FlutterCameraViewPlugin
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
   FlutterMethodChannel* channel = [FlutterMethodChannel
-      methodChannelWithName:@"flutter_camerakit"
+      methodChannelWithName:@"flutter_cameraview"
             binaryMessenger:[registrar messenger]];
-  FlutterCamerakitPlugin* instance = [[FlutterCamerakitPlugin alloc] init];
+  FlutterCameraViewPlugin* instance = [[FlutterCameraViewPlugin alloc] init];
   [registrar addMethodCallDelegate:instance channel:channel];
 }
 
